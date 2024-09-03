@@ -1,36 +1,37 @@
 import { View, Text, StyleSheet, TextInput, Button, Alert } from "react-native";
 import React from "react";
 import { Controller, useForm } from "react-hook-form";
-import { addDoc, collection } from "firebase/firestore";
+import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { firestore } from "../Firebase/firebase.config";
 
 
 
 
 export default function AddPost({ navigation }) {
-  const createdAt = Date.now();
-  const { control, handleSubmit, formState: { errors } } = useForm({
-    defaultValues: {
-      userName: '',
-      content: '',
-      postedOn: createdAt,
-    },
-  });
-
-  const onSubmit = async (data) => {
-    console.log(data);
-    try {
-      await addDoc(collection(firestore, 'Post'), {
-        userName: data.userName,
-        content: data.content,
-        postedOn: data.postedOn,
+    const { control, handleSubmit, formState: { errors } } = useForm({
+        defaultValues: {
+          userName: '',
+          content: '',
+        },
       });
-      Alert.alert("Post added successfully")
-      navigation.goBack();
-    } catch (err) {
-      console.error(err);
-    }
-  };
+    
+      const onSubmit = async (data) => {
+        console.log(data);
+        const now = new Date();
+      const bdTime = new Date(now.getTime() + 6 * 60 * 60 * 1000);
+        try {
+          await addDoc(collection(firestore, 'Post'), {
+            userName: data.userName,
+            content: data.content,
+            createdAt: bdTime,  // Incbdlude timestamp here
+          });
+          Alert.alert("Post added successfully");
+          navigation.goBack();
+        } catch (err) {
+          console.error("Error adding post: ", err);
+          Alert.alert("Error adding post, please try again.");
+        }
+      };
 
   return (
     <View style={styles.container}>
@@ -53,7 +54,7 @@ export default function AddPost({ navigation }) {
 
       <Controller
         control={control}
-        rules={{ maxLength: 500, required: true }}
+        rules={{ maxLength: 1500, required: true }}
         render={({ field: { onChange, onBlur, value } }) => (
           <TextInput
             style={styles.textarea}

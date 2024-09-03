@@ -1,7 +1,36 @@
-import { View, Text, StyleSheet, Pressable } from "react-native";
-import React from "react";
+import { View, Text, StyleSheet, Pressable, FlatList } from "react-native";
+import React, { useEffect, useState } from "react";
 import FontAwesome from '@expo/vector-icons/FontAwesome';
+import { collection, getDocs, onSnapshot, orderBy, query } from "firebase/firestore";
+import { firestore } from "../Firebase/firebase.config";
+
 export default function Feed({ navigation }) {
+    const [posts, setPosts] = useState([]);
+
+  useEffect(() => {
+    const postsCollection = collection(firestore, "Post");
+    const postsQuery = query(postsCollection, orderBy("createdAt", "desc"));
+
+    const unsubscribe = onSnapshot(postsQuery, (snapshot) => {
+      const postsList = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setPosts(postsList);
+    });
+
+    // Cleanup the subscription when the component unmounts
+    return () => unsubscribe();
+  }, []);
+
+  const formatDate = (timestamp) => {
+    if (timestamp && timestamp.seconds) {
+      const date = timestamp.toDate(); 
+      return date.toLocaleDateString();
+    }
+    return '';
+  };
+  
   return (
     <View style={styles.container}>
       <View style={styles.headerWrapper}>
@@ -12,21 +41,29 @@ export default function Feed({ navigation }) {
       </View>
 
       {/* For Feed View */}
-      <View style={styles.postHeader}>
-        <Text>Raju Ahammed</Text>
-        <Text>Posted On 2 Jan 2024</Text>
-      </View>
-      <View>
-        <Text>
-          Lorem, ipsum dolor sit amet consectetur adipisicing elit. Nam
-          perspiciatis sed sapiente dolorum rerum necessitatibus omnis maiores
-          harum veritatis perferendis.
-        </Text>
-        <View style={styles.thumpsUp}>
-            <Text>20 Likes</Text>
-        <Pressable><FontAwesome name="thumbs-o-up" size={24} color="black" /></Pressable>
-        </View>
-      </View>
+      <FlatList
+        data={posts}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => (
+          <View style={styles.userItem}>
+            <View style={styles.nameHeading}>
+              <View style={styles.names}></View>
+              <View>
+                <Text style={styles.nameText}>{item.userName}</Text>
+                <Text style={styles.postedOn}>Posted On {formatDate(item.createdAt)}</Text>
+              </View>
+              <View>
+                <Text>{item.content}</Text>
+              </View>
+              <View style={styles.thumpsUp}>
+                <Text>20 Likes</Text>
+                <FontAwesome style={styles.thumpsupIcon} name="thumbs-o-up" size={24} color="black" />
+              </View>
+            </View>
+          </View>
+        )}
+        contentContainerStyle={styles.feedList}
+      />
     </View>
   );
 }
@@ -66,5 +103,22 @@ const styles = StyleSheet.create({
   },
   thumpsUp:{
     marginTop: 10,
+  },
+  feedList:{
+    marginTop: 10,
+  },
+  thumpsupIcon:{
+    marginTop: 10,
+  },
+  nameText:{
+    fontSize: 16,
+    fontWeight: '500',
+    marginBottom: 5
+  },
+  postedOn:{
+    marginBottom: 10,
+  },
+  userItem:{
+    marginTop: 20
   }
 });
