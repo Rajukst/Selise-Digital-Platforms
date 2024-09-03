@@ -23,7 +23,7 @@ export default function AddPost({ navigation }) {
           await addDoc(collection(firestore, 'Post'), {
             userName: data.userName,
             content: data.content,
-            createdAt: bdTime,  // Incbdlude timestamp here
+            createdAt: bdTime,  
           });
           Alert.alert("Post added successfully");
           navigation.goBack();
