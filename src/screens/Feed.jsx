@@ -1,11 +1,26 @@
-import { View, Text, StyleSheet, Pressable, FlatList } from "react-native";
 import React, { useEffect, useState } from "react";
-import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { collection, getDocs, onSnapshot, orderBy, query } from "firebase/firestore";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Pressable,
+  FlatList,
+} from "react-native";
+import FontAwesome from "@expo/vector-icons/FontAwesome";
+import {
+  collection,
+  doc,
+  onSnapshot,
+  orderBy,
+  query,
+  updateDoc,
+  increment,
+} from "firebase/firestore";
 import { firestore } from "../Firebase/firebase.config";
 
 export default function Feed({ navigation }) {
-    const [posts, setPosts] = useState([]);
+  const [posts, setPosts] = useState([]);
+  const [likes, setLikes] = useState({});
 
   useEffect(() => {
     const postsCollection = collection(firestore, "Post");
@@ -17,6 +32,13 @@ export default function Feed({ navigation }) {
         ...doc.data(),
       }));
       setPosts(postsList);
+
+      // Initialize like counts for new posts
+      const newLikes = {};
+      postsList.forEach(post => {
+        newLikes[post.id] = post.likes || 0; // Assuming posts might have an initial likes field
+      });
+      setLikes(newLikes);
     });
 
     // Cleanup the subscription when the component unmounts
@@ -25,12 +47,30 @@ export default function Feed({ navigation }) {
 
   const formatDate = (timestamp) => {
     if (timestamp && timestamp.seconds) {
-      const date = timestamp.toDate(); 
+      const date = timestamp.toDate();
       return date.toLocaleDateString();
     }
-    return '';
+    return "";
   };
-  
+
+  const handleLikePress = async (postId) => {
+    try {
+      // Update likes count in Firestore
+      const postRef = doc(firestore, "Post", postId);
+      await updateDoc(postRef, {
+        likes: increment(1)
+      });
+
+      // Optimistically update the likes state
+      setLikes(prevLikes => {
+        const newLikes = { ...prevLikes, [postId]: (prevLikes[postId] || 0) + 1 };
+        return newLikes;
+      });
+    } catch (error) {
+      console.error("Error updating likes: ", error);
+    }
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.headerWrapper}>
@@ -41,36 +81,43 @@ export default function Feed({ navigation }) {
       </View>
 
       {/* For Feed View */}
-      <FlatList
-        data={posts}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <View style={styles.userItem}>
-            <View style={styles.nameHeading}>
-              <View style={styles.names}></View>
-              <View>
-                <Text style={styles.nameText}>{item.userName}</Text>
-                <Text style={styles.postedOn}>Posted On {formatDate(item.createdAt)}</Text>
-              </View>
-              <View>
-                <Text>{item.content}</Text>
-              </View>
-              <View style={styles.thumpsUp}>
-                <Text>20 Likes</Text>
-                <FontAwesome style={styles.thumpsupIcon} name="thumbs-o-up" size={24} color="black" />
-              </View>
+      {posts.length > 0 ? <FlatList
+      data={posts}
+      keyExtractor={(item) => item.id}
+      renderItem={({ item }) => (
+        <View style={styles.userItem}>
+          <View style={styles.nameHeading}>
+            <View style={styles.names}></View>
+            <View>
+              <Text style={styles.nameText}>{item.userName}</Text>
+              <Text style={styles.postedOn}>
+                Posted On {formatDate(item.createdAt)}
+              </Text>
+            </View>
+            <View>
+              <Text>{item.content}</Text>
+            </View>
+            <View style={styles.thumpsUp}>
+              <Text>{likes[item.id] || 0} Likes</Text>
+              <FontAwesome onPress={() => handleLikePress(item.id)}
+                style={styles.thumpsupIcon} name="thumbs-up" size={28} color="black" />
             </View>
           </View>
-        )}
-        contentContainerStyle={styles.feedList}
-      />
+        </View>
+      )}
+      contentContainerStyle={styles.feedList}
+    /> :
+    <View style={styles.noPostContainer}>
+    <Text style={styles.noPost}>No Post to Show</Text>
+  </View>   
+      }
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    paddingVertical: 30,
+    paddingVertical: 40,
     paddingHorizontal: 10,
     flex: 1,
   },
@@ -101,24 +148,36 @@ const styles = StyleSheet.create({
     marginTop: 10,
     marginBottom: 10,
   },
-  thumpsUp:{
+  thumpsUp: {
     marginTop: 10,
   },
-  feedList:{
+  feedList: {
     marginTop: 10,
-  },
-  thumpsupIcon:{
-    marginTop: 10,
-  },
-  nameText:{
-    fontSize: 16,
-    fontWeight: '500',
-    marginBottom: 5
-  },
-  postedOn:{
     marginBottom: 10,
   },
-  userItem:{
-    marginTop: 20
-  }
+  thumpsupIcon: {
+    marginTop: 10,
+  },
+  nameText: {
+    fontSize: 16,
+    fontWeight: "500",
+    marginBottom: 5,
+  },
+  postedOn: {
+    marginBottom: 10,
+  },
+  userItem: {
+    marginTop: 20,
+    marginBottom: 20,
+  },
+  
+  noPostContainer: {
+    flex: 1, // Takes up the full height of the screen
+    justifyContent: 'center', // Centers vertically
+    alignItems: 'center', // Centers horizontally
+  },
+  noPost: {
+    fontSize: 18,
+    color: 'gray',
+  },
 });

@@ -54,7 +54,8 @@ export default function AddPost({ navigation }) {
 
       <Controller
         control={control}
-        rules={{ maxLength: 1500, required: true }}
+        
+        rules={{ maxLength: { value: 1500, message: 'Maximum length is 1500 characters.' } , required: true }}
         render={({ field: { onChange, onBlur, value } }) => (
           <TextInput
             style={styles.textarea}
@@ -68,7 +69,8 @@ export default function AddPost({ navigation }) {
         )}
         name="content"
       />
-      {errors.content && <Text>This is required.</Text>}
+      {errors.content && <Text>This field is required</Text>}
+      {errors.content && <Text style={styles.errorText}>{errors.content.message}</Text>}
       
       <Button title="Submit" onPress={handleSubmit(onSubmit)} />
     </View>
@@ -77,7 +79,7 @@ export default function AddPost({ navigation }) {
 
 const styles = StyleSheet.create({
   container: {
-    paddingVertical: 30,
+    paddingVertical: 40,
     paddingHorizontal: 10,
     flex: 1,
   },
