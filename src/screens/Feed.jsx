@@ -77,7 +77,9 @@ export default function Feed({ navigation }) {
         <Pressable onPress={() => navigation.navigate("AddPost")}>
           <Text style={styles.addPostBtn}>Add A New Post</Text>
         </Pressable>
+        <View style={styles.profileNameWrapper}>
         <Text style={styles.profileName}>AB</Text>
+      </View>
       </View>
 
       {/* For Feed View */}
@@ -133,13 +135,18 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
   },
-  profileName: {
+  profileNameWrapper: {
     height: 40,
     width: 40,
     borderRadius: 20,
     backgroundColor: "black",
+    justifyContent: 'center', // Center vertically
+    alignItems: 'center',     // Center horizontally
+  },
+  profileName: {
     color: "white",
     textAlign: "center",
+    fontSize: 16, // Adjust font size as needed
   },
   postHeader: {
     flexDirection: "row",
