@@ -1,0 +1,21 @@
+<View style={styles.container}>
+      <Text>Add a Post</Text>
+      <View style={styles.postContainer}>
+        <TextInput
+          style={styles.textInpt}
+          placeholder="Users Name"
+          keyboardType="default"
+        />
+        <TextInput
+          style={styles.textarea}
+          placeholder="Whats On your Mind. Just Post It!!"
+          multiline={true}
+          numberOfLines={4}
+          keyboardType='default'
+        />
+        <Text>30 Charecters</Text>
+        <Pressable>
+          <Text style={styles.postBtn}>Post</Text>
+        </Pressable>
+      </View>
+    </View>
