@@ -42,7 +42,7 @@ export default function AddPost({ navigation }) {
         render={({ field: { onChange, onBlur, value } }) => (
           <TextInput
             style={styles.textInpt}
-            placeholder="User name"
+            placeholder="Name"
             onBlur={onBlur}
             onChangeText={onChange}
             value={value}
@@ -64,7 +64,6 @@ export default function AddPost({ navigation }) {
             onChangeText={onChange}
             value={value}
             multiline={true}
-            numberOfLines={4}
           />
         )}
         name="content"
@@ -72,29 +71,31 @@ export default function AddPost({ navigation }) {
       {errors.content && <Text>This field is required</Text>}
       {errors.content && <Text style={styles.errorText}>{errors.content.message}</Text>}
       
-      <Button title="Submit" onPress={handleSubmit(onSubmit)} />
+      <View style={styles.postBtn}>
+      <Button title="Post" onPress={handleSubmit(onSubmit)} />
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    paddingVertical: 40,
-    paddingHorizontal: 10,
+    paddingVertical: 50,
+    paddingHorizontal: 15,
     flex: 1,
   },
   textInpt: {
     borderWidth: 1,
-    borderColor: "black",
+    borderColor: "#A9A9A9",
     height: 40,
     borderRadius: 5,
     paddingLeft: 10,
     marginTop: 10,
   },
   textarea: {
-    marginTop: 10,
+    marginTop: 40,
     borderBottomWidth: 1,
-    borderBottomColor: "black",
+    borderBottomColor: "#A9A9A9",
     marginBottom: 20,
   },
   postContainer: {
@@ -102,9 +103,7 @@ const styles = StyleSheet.create({
   },
   postBtn: {
     marginTop: 20,
-    backgroundColor: "blue",
-    width: 80,
-    padding: 10,
+    width: 100,
     textAlign: "center",
     color: "white",
     fontWeight: "600",

@@ -36,7 +36,7 @@ export default function Feed({ navigation }) {
       // Initialize like counts for new posts
       const newLikes = {};
       postsList.forEach(post => {
-        newLikes[post.id] = post.likes || 0; // Assuming posts might have an initial likes field
+        newLikes[post.id] = post.likes || 0;
       });
       setLikes(newLikes);
     });
